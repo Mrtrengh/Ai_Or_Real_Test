@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI vs Gerçek – Test</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg:     #10111a;
+            --card:   #16182a;
+            --border: rgba(255,255,255,0.07);
+            --text:   #f0f2ff;
+            --muted:  #8890b0;
+            --red:    #e8365d;
+            --teal:   #2de2c4;
+            --green:  #22c55e;
+        }
+
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+        /* Navbar */
+        nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 40px; height: 64px;
+            background: rgba(16,17,26,0.9); backdrop-filter: blur(14px);
+            border-bottom: 1px solid var(--border);
+        }
+        .nav-logo { font-weight: 900; font-size: 1.05rem; text-decoration: none; color: var(--text); }
+        .nav-logo span { color: var(--red); }
+        .nav-back { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 0.88rem; font-weight: 500; text-decoration: none; transition: color 0.2s; }
+        .nav-back:hover { color: var(--text); }
+
+        /* Page */
+        .page { max-width: 1160px; margin: 0 auto; padding: 88px 24px 60px; }
+
+        /* Header */
+        .test-header { text-align: center; margin-bottom: 32px; }
+        .test-header h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 900; letter-spacing: -1px; margin-bottom: 6px; }
+        .test-header h1 em { font-style: normal; color: var(--red); }
+        .test-header p { color: var(--muted); font-size: 0.92rem; }
+
+        /* Score chips */
+        .score-bar { display: flex; justify-content: center; gap: 10px; margin-bottom: 32px; flex-wrap: wrap; }
+        .chip { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 12px 26px; text-align: center; min-width: 100px; }
+        .chip .lbl { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+        .chip .val { font-size: 1.55rem; font-weight: 800; color: var(--text); }
+        .chip.c-correct .val { color: var(--green); }
+        .chip.c-wrong   .val { color: var(--red); }
+
+        /* Image cards */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+
+        .img-card {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 14px; overflow: hidden; cursor: pointer;
+            transition: border-color 0.2s, transform 0.18s;
+        }
+        .img-card:hover:not(.disabled) { border-color: rgba(255,255,255,0.14); transform: translateY(-2px); }
+        .img-card.disabled { cursor: not-allowed; }
+        .img-card.s-correct { border-color: var(--green); }
+        .img-card.s-wrong   { border-color: var(--red); }
+
+        .img-wrap { position: relative; width: 100%; aspect-ratio: 4/3; background: #0d0f1d; overflow: hidden; }
+        .img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+        .overlay {
+            position: absolute; inset: 0;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(10,11,20,0.68);
+            opacity: 0; transition: opacity 0.22s; pointer-events: none;
+        }
+        .overlay.show { opacity: 1; }
+
+        .pill {
+            font-size: 0.85rem; font-weight: 800; letter-spacing: 0.06em;
+            text-transform: uppercase; padding: 8px 20px; border-radius: 8px;
+        }
+        .pill.correct { background: rgba(34,197,94,0.12); color: var(--green); border: 1px solid var(--green); }
+        .pill.wrong   { background: rgba(232,54,93,0.12);  color: var(--red);   border: 1px solid var(--red); }
+
+        .card-foot { padding: 14px 18px; font-weight: 600; font-size: 0.88rem; color: var(--muted); border-top: 1px solid var(--border); }
+
+        @media (max-width: 620px) {
+            nav { padding: 0 18px; }
+            .grid { grid-template-columns: 1fr; gap: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a class="nav-logo" href="./main.html">AI<span> vs </span>Gerçek</a>
+    <a class="nav-back" href="./main.html">← Ana Sayfa</a>
+</nav>
+
+<div class="page">
+
+    <div class="test-header">
+        <h1>Hangisi <em>AI?</em></h1>
+        <p>Yapay zeka ile üretilmiş fotoğrafı seçin</p>
+    </div>
+
+    <div class="score-bar">
+        <div class="chip">
+            <div class="lbl">Soru</div>
+            <div class="val" id="qNum">1/15</div>
+        </div>
+        <div class="chip c-correct">
+            <div class="lbl">Doğru</div>
+            <div class="val" id="cCount">0</div>
+        </div>
+        <div class="chip c-wrong">
+            <div class="lbl">Yanlış</div>
+            <div class="val" id="wCount">0</div>
+        </div>
+    </div>
+
+    <div class="grid">
+        <div class="img-card" id="leftBox">
+            <div class="img-wrap">
+                <img id="leftImg" src="" alt="Fotoğraf A">
+                <div class="overlay" id="leftOv"><span class="pill" id="leftPill"></span></div>
+            </div>
+            <div class="card-foot">Fotoğraf A</div>
+        </div>
+        <div class="img-card" id="rightBox">
+            <div class="img-wrap">
+                <img id="rightImg" src="" alt="Fotoğraf B">
+                <div class="overlay" id="rightOv"><span class="pill" id="rightPill"></span></div>
+            </div>
+            <div class="card-foot">Fotoğraf B</div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const aiPhotos = [
+        'https://images.unsplash.com/photo-1707343843437-caacff5cfa74?w=600',
+        'https://images.unsplash.com/photo-1707343843982-f8275f3994c5?w=600',
+        'https://images.unsplash.com/photo-1707343844152-6d33a0bb32c3?w=600',
+        'https://images.unsplash.com/photo-1682695795557-17447f921f79?w=600',
+        'https://images.unsplash.com/photo-1682687982501-1e58ab814714?w=600',
+        'https://images.unsplash.com/photo-1682686581498-5e85c7228119?w=600',
+        'https://images.unsplash.com/photo-1682687220742-aba13b6e50ba?w=600',
+        'https://images.unsplash.com/photo-1682687220640-b6f1f954d967?w=600',
+        'https://images.unsplash.com/photo-1682687220063-4742bd7fd538?w=600',
+        'https://images.unsplash.com/photo-1682687220923-c58b9a4592ae?w=600',
+        'https://images.unsplash.com/photo-1682687221248-3116ba6ab483?w=600',
+        'https://images.unsplash.com/photo-1682687220208-22d7a2543e88?w=600',
+        'https://images.unsplash.com/photo-1682687220199-d0124f48f95b?w=600',
+        'https://images.unsplash.com/photo-1682687221038-404cb8830901?w=600',
+        './Data/İmages/Ai_İmages/images1.jpg'
+    ];
+
+    const realPhotos = [
+        'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600',
+        'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=600',
+        'https://images.unsplash.com/photo-1426604966848-d7adac402bff?w=600',
+        'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=600',
+        'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=600',
+        'https://images.unsplash.com/photo-1518173946687-a4c8892bbd9f?w=600',
+        'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=600',
+        'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=600',
+        'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600',
+        'https://images.unsplash.com/photo-1504893524553-b855bce32c67?w=600',
+        'https://images.unsplash.com/photo-1418065460487-3e41a6c84dc5?w=600',
+        'https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=600',
+        'https://images.unsplash.com/photo-1425082661705-1834bfd09dca?w=600',
+        'https://images.unsplash.com/photo-1445404590072-16ef9c18bd83?w=600',
+        'https://images.unsplash.com/photo-1514984879728-be0aff75a6e8?w=600'
+    ];
+
+    const MAX_Q = 15;
+    let q = 1, cor = 0, wrn = 0, correctSide = null, busy = false;
+    let usedAi = [], usedReal = [];
+
+    const leftBox  = document.getElementById('leftBox');
+    const rightBox = document.getElementById('rightBox');
+    const leftImg  = document.getElementById('leftImg');
+    const rightImg = document.getElementById('rightImg');
+    const leftOv   = document.getElementById('leftOv');
+    const rightOv  = document.getElementById('rightOv');
+    const leftPill = document.getElementById('leftPill');
+    const rightPill= document.getElementById('rightPill');
+
+    function pick(arr, used) {
+        if (used.length >= arr.length) used.length = 0;
+        let i; do { i = Math.floor(Math.random() * arr.length); } while (used.includes(i));
+        used.push(i); return arr[i];
+    }
+
+    function load() {
+        const ai = pick(aiPhotos, usedAi), real = pick(realPhotos, usedReal);
+        correctSide = Math.random() < 0.5 ? 'left' : 'right';
+        leftImg.src  = correctSide === 'left'  ? ai   : real;
+        rightImg.src = correctSide === 'right' ? ai   : real;
+
+        [leftBox, rightBox].forEach(b => b.className = 'img-card');
+        [leftOv, rightOv].forEach(o => o.classList.remove('show'));
+        [leftPill, rightPill].forEach(p => { p.className = 'pill'; p.textContent = ''; });
+
+        document.getElementById('qNum').textContent = q + '/' + MAX_Q;
+        busy = false;
+    }
+
+    function answer(side) {
+        if (busy) return;
+        busy = true;
+        leftBox.classList.add('disabled');
+        rightBox.classList.add('disabled');
+
+        const ok = side === correctSide;
+        if (ok) { cor++; document.getElementById('cCount').textContent = cor; }
+        else    { wrn++; document.getElementById('wCount').textContent = wrn; }
+
+        const myBox   = side === 'left' ? leftBox   : rightBox;
+        const theirBox= side === 'left' ? rightBox  : leftBox;
+        const myOv    = side === 'left' ? leftOv    : rightOv;
+        const theirOv = side === 'left' ? rightOv   : leftOv;
+        const myPill  = side === 'left' ? leftPill  : rightPill;
+        const theirPill=side === 'left' ? rightPill : leftPill;
+
+        if (ok) {
+            myBox.classList.add('s-correct');    myPill.textContent = '✓ AI';     myPill.classList.add('correct');
+            theirBox.classList.add('s-wrong');   theirPill.textContent = 'Gerçek';theirPill.classList.add('wrong');
+        } else {
+            myBox.classList.add('s-wrong');      myPill.textContent = '✗ Gerçek'; myPill.classList.add('wrong');
+            theirBox.classList.add('s-correct'); theirPill.textContent = 'AI';    theirPill.classList.add('correct');
+        }
+        myOv.classList.add('show');
+        theirOv.classList.add('show');
+
+        if (q >= MAX_Q) { setTimeout(results, 1600); return; }
+        q++;
+        setTimeout(load, 1600);
+    }
+
+    function results() {
+        const pct = Math.round((cor / MAX_Q) * 100);
+        const msg = pct >= 80 ? '🌟 Mükemmel! AI uzmanısın!'
+                  : pct >= 60 ? '👍 İyi iş! Gelişiyorsun!'
+                  : pct >= 40 ? '💪 Fena değil, pratik yap!'
+                  :             '🎯 Devam et!';
+        alert(`TEST TAMAMLANDI!\n\nDoğru: ${cor}/${MAX_Q}  |  Başarı: %${pct}\n\n${msg}`);
+        if (confirm('Tekrar oynamak ister misin?')) location.reload();
+    }
+
+    leftBox.addEventListener('click',  () => answer('left'));
+    rightBox.addEventListener('click', () => answer('right'));
+    window.addEventListener('load', load);
+</script>
+</body>
+</html>
