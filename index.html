@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sarilium — Kod, Teknoloji, Topluluk</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg:      #080910;
+            --bg2:     #0d0f1c;
+            --card:    #111428;
+            --border:  rgba(255,255,255,0.06);
+            --border2: rgba(255,255,255,0.1);
+            --text:    #eef0ff;
+            --muted:   #6b75a0;
+            --red:     #f03a5f;
+            --teal:    #00e8c8;
+            --gold:    #f0b429;
+            --blue:    #5b8af5;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Noise texture overlay */
+        body::after {
+            content: '';
+            position: fixed; inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+            pointer-events: none; z-index: 9999; opacity: 0.35;
+        }
+
+        /* ═══════════════════ AMBIENT LIGHT ═══════════════════ */
+        .ambient {
+            position: fixed; top: 0; left: 0; right: 0;
+            height: 100vh; pointer-events: none; z-index: 0;
+            overflow: hidden;
+        }
+        .ambient-blob {
+            position: absolute; border-radius: 50%;
+            filter: blur(100px); opacity: 0.12;
+        }
+        .ab1 { width: 600px; height: 600px; background: var(--red); top: -200px; left: -100px; animation: drift1 18s ease-in-out infinite; }
+        .ab2 { width: 500px; height: 500px; background: var(--teal); top: -100px; right: -150px; animation: drift2 22s ease-in-out infinite; }
+        .ab3 { width: 400px; height: 400px; background: var(--blue); top: 40%; left: 30%; animation: drift3 15s ease-in-out infinite; }
+
+        @keyframes drift1 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(60px,80px) scale(1.1)} }
+        @keyframes drift2 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-40px,60px) scale(0.9)} }
+        @keyframes drift3 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-80px,-40px)} }
+
+        /* ═══════════════════ NAVBAR ═══════════════════ */
+        nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 48px; height: 68px;
+            background: rgba(8,9,16,0.75);
+            backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-logo {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800; font-size: 1.15rem;
+            text-decoration: none; color: var(--text);
+            letter-spacing: -0.5px;
+            display: flex; align-items: center; gap: 2px;
+        }
+        .nav-logo .dot { color: var(--red); font-size: 1.4rem; line-height: 0; position: relative; top: 2px; }
+
+        .nav-links { display: flex; gap: 2px; list-style: none; align-items: center; }
+        .nav-links a {
+            color: var(--muted); text-decoration: none; font-size: 0.875rem;
+            font-weight: 500; padding: 7px 14px; border-radius: 9px;
+            transition: color 0.2s, background 0.2s;
+        }
+        .nav-links a:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+        .nav-links .active { color: var(--text); background: rgba(255,255,255,0.06); border: 1px solid var(--border2); }
+
+        .nav-test-link {
+            display: flex; align-items: center; gap: 7px;
+            background: linear-gradient(135deg, rgba(0,232,200,0.1), rgba(0,232,200,0.05)) !important;
+            border: 1px solid rgba(0,232,200,0.2) !important;
+            color: var(--teal) !important;
+        }
+        .nav-test-link:hover { background: rgba(0,232,200,0.15) !important; color: var(--teal) !important; }
+
+        .pulse-dot {
+            width: 6px; height: 6px; background: var(--teal);
+            border-radius: 50%; box-shadow: 0 0 8px var(--teal);
+            animation: pulse-anim 2s ease-in-out infinite;
+        }
+        @keyframes pulse-anim { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.7)} }
+
+        .nav-actions { display: flex; align-items: center; gap: 8px; }
+        .btn-login {
+            color: var(--muted); text-decoration: none; font-size: 0.85rem;
+            font-weight: 500; padding: 8px 16px; border-radius: 9px;
+            border: 1px solid var(--border); transition: all 0.2s;
+        }
+        .btn-login:hover { color: var(--text); border-color: var(--border2); }
+        .btn-register {
+            background: var(--red); color: #fff; text-decoration: none;
+            font-size: 0.85rem; font-weight: 600; padding: 8px 18px;
+            border-radius: 9px; transition: all 0.2s;
+            box-shadow: 0 0 20px rgba(240,58,95,0.25);
+        }
+        .btn-register:hover { opacity: 0.88; transform: translateY(-1px); box-shadow: 0 0 30px rgba(240,58,95,0.35); }
+
+        /* ═══════════════════ HERO ═══════════════════ */
+        .hero {
+            position: relative; z-index: 1;
+            max-width: 900px; margin: 0 auto;
+            padding: 180px 32px 100px;
+            text-align: center;
+            display: flex; flex-direction: column; align-items: center; gap: 24px;
+        }
+
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 9px;
+            background: rgba(240,58,95,0.08); border: 1px solid rgba(240,58,95,0.2);
+            color: #ff6b8a; font-size: 0.72rem; font-weight: 600;
+            letter-spacing: 0.1em; text-transform: uppercase;
+            padding: 7px 16px; border-radius: 100px;
+            animation: fadeUp 0.6s ease both;
+        }
+        .hero-badge-dot { width: 5px; height: 5px; background: var(--red); border-radius: 50%; box-shadow: 0 0 8px var(--red); }
+
+        .hero h1 {
+            font-family: 'Syne', sans-serif;
+            font-size: clamp(2.8rem, 7vw, 5.2rem);
+            font-weight: 800; letter-spacing: -3px; line-height: 1.0;
+            animation: fadeUp 0.6s 0.1s ease both;
+        }
+        .hero h1 .line2 { display: block; }
+        .hero h1 em { font-style: normal; color: var(--red); }
+        .hero h1 .teal { color: var(--teal); }
+
+        .hero-sub {
+            font-size: 1.05rem; line-height: 1.8; color: var(--muted);
+            max-width: 560px; font-weight: 400;
+            animation: fadeUp 0.6s 0.2s ease both;
+        }
+        .hero-sub strong { color: var(--text); font-weight: 500; }
+
+        .hero-cta {
+            display: flex; align-items: center; gap: 14px; flex-wrap: wrap; justify-content: center;
+            animation: fadeUp 0.6s 0.3s ease both;
+        }
+        .cta-primary {
+            background: linear-gradient(135deg, var(--red), #c2185b);
+            color: #fff; font-family: 'DM Sans', sans-serif;
+            font-weight: 600; font-size: 0.95rem;
+            padding: 14px 32px; border-radius: 12px; border: none;
+            text-decoration: none; cursor: pointer;
+            transition: all 0.25s;
+            box-shadow: 0 8px 32px rgba(240,58,95,0.3), 0 0 0 1px rgba(240,58,95,0.1);
+        }
+        .cta-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(240,58,95,0.4); }
+
+        .cta-ghost {
+            color: var(--muted); font-size: 0.95rem; font-weight: 500;
+            text-decoration: none; padding: 14px 8px;
+            transition: color 0.2s; display: flex; align-items: center; gap: 6px;
+        }
+        .cta-ghost:hover { color: var(--text); }
+        .cta-ghost .arrow { transition: transform 0.2s; }
+        .cta-ghost:hover .arrow { transform: translateX(4px); }
+
+        /* Stats row */
+        .hero-stats {
+            display: flex; align-items: center; gap: 32px;
+            padding: 20px 32px; background: var(--card);
+            border: 1px solid var(--border); border-radius: 16px;
+            margin-top: 8px;
+            animation: fadeUp 0.6s 0.4s ease both;
+        }
+        .stat { text-align: center; }
+        .stat-val {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.6rem; font-weight: 800; color: var(--text);
+            letter-spacing: -1px;
+        }
+        .stat-val .accent { color: var(--teal); }
+        .stat-lbl { font-size: 0.72rem; color: var(--muted); font-weight: 400; margin-top: 2px; letter-spacing: 0.05em; }
+        .stat-sep { width: 1px; height: 36px; background: var(--border); }
+
+        @keyframes fadeUp { from { opacity:0; transform: translateY(20px); } to { opacity:1; transform: translateY(0); } }
+
+        /* ═══════════════════ MARQUEE ═══════════════════ */
+        .marquee-wrap {
+            position: relative; z-index: 1;
+            overflow: hidden; padding: 20px 0;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            background: linear-gradient(90deg, var(--bg) 0%, transparent 5%, transparent 95%, var(--bg) 100%);
+        }
+        .marquee-track {
+            display: flex; gap: 48px;
+            animation: marquee 28s linear infinite;
+            width: max-content;
+        }
+        .marquee-wrap:hover .marquee-track { animation-play-state: paused; }
+        .marquee-item {
+            display: flex; align-items: center; gap: 10px;
+            font-size: 0.8rem; font-weight: 500; color: var(--muted);
+            white-space: nowrap;
+        }
+        .marquee-item .tag {
+            background: var(--card); border: 1px solid var(--border);
+            padding: 5px 12px; border-radius: 100px; color: var(--text);
+            font-size: 0.75rem;
+        }
+        .marquee-item .tag.r { border-color: rgba(240,58,95,0.3); color: var(--red); }
+        .marquee-item .tag.t { border-color: rgba(0,232,200,0.3); color: var(--teal); }
+        .marquee-item .tag.g { border-color: rgba(240,180,41,0.3); color: var(--gold); }
+        .marquee-item .tag.b { border-color: rgba(91,138,245,0.3); color: var(--blue); }
+        @keyframes marquee { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+        /* ═══════════════════ FEATURES ═══════════════════ */
+        .section {
+            position: relative; z-index: 1;
+            max-width: 1080px; margin: 0 auto;
+            padding: 80px 32px;
+        }
+
+        .section-header { text-align: center; margin-bottom: 56px; }
+        .section-tag {
+            display: inline-flex; align-items: center; gap: 8px;
+            font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em;
+            text-transform: uppercase; color: var(--muted);
+            margin-bottom: 14px;
+        }
+        .section-tag::before, .section-tag::after {
+            content: ''; display: block; height: 1px; width: 30px; background: var(--border2);
+        }
+        .section-title {
+            font-family: 'Syne', sans-serif;
+            font-size: clamp(1.8rem, 3vw, 2.6rem);
+            font-weight: 800; letter-spacing: -1.5px;
+            line-height: 1.1;
+        }
+        .section-title em { font-style: normal; color: var(--red); }
+
+        /* Feature grid */
+        .feat-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .feat-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 32px;
+            transition: all 0.3s;
+            position: relative; overflow: hidden;
+        }
+        .feat-card::before {
+            content: ''; position: absolute;
+            top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+        }
+        .feat-card:hover {
+            border-color: rgba(255,255,255,0.12);
+            transform: translateY(-3px);
+            background: #131629;
+        }
+        .feat-card.accent-red { border-top: 2px solid rgba(240,58,95,0.4); }
+        .feat-card.accent-teal { border-top: 2px solid rgba(0,232,200,0.4); }
+        .feat-card.accent-gold { border-top: 2px solid rgba(240,180,41,0.4); }
+        .feat-card.accent-blue { border-top: 2px solid rgba(91,138,245,0.4); }
+
+        .feat-icon-wrap {
+            width: 48px; height: 48px; border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem; margin-bottom: 20px;
+            border: 1px solid var(--border);
+        }
+        .feat-card.accent-red .feat-icon-wrap   { background: rgba(240,58,95,0.1); border-color: rgba(240,58,95,0.2); }
+        .feat-card.accent-teal .feat-icon-wrap  { background: rgba(0,232,200,0.1); border-color: rgba(0,232,200,0.2); }
+        .feat-card.accent-gold .feat-icon-wrap  { background: rgba(240,180,41,0.1); border-color: rgba(240,180,41,0.2); }
+        .feat-card.accent-blue .feat-icon-wrap  { background: rgba(91,138,245,0.1); border-color: rgba(91,138,245,0.2); }
+
+        .feat-label { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 8px; }
+        .feat-card.accent-red  .feat-label { color: var(--red); }
+        .feat-card.accent-teal .feat-label { color: var(--teal); }
+        .feat-card.accent-gold .feat-label { color: var(--gold); }
+        .feat-card.accent-blue .feat-label { color: var(--blue); }
+
+        .feat-card h3 { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 700; margin-bottom: 10px; letter-spacing: -0.3px; }
+        .feat-card p { font-size: 0.875rem; line-height: 1.7; color: var(--muted); }
+
+        .feat-card .feat-arrow {
+            position: absolute; bottom: 28px; right: 28px;
+            color: var(--border2); font-size: 1.1rem;
+            transition: all 0.2s;
+        }
+        .feat-card:hover .feat-arrow { color: var(--muted); transform: translate(3px,-3px); }
+
+        /* ═══════════════════ TEST CTA BANNER ═══════════════════ */
+        .test-banner {
+            position: relative; z-index: 1;
+            max-width: 1080px; margin: 0 auto 80px;
+            padding: 0 32px;
+        }
+        .test-banner-inner {
+            background: linear-gradient(135deg, #111428, #0d1024);
+            border: 1px solid var(--border);
+            border-radius: 24px; padding: 52px 60px;
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 40px; overflow: hidden; position: relative;
+        }
+        .test-banner-inner::before {
+            content: ''; position: absolute; inset: 0;
+            background: radial-gradient(ellipse at 80% 50%, rgba(0,232,200,0.06) 0%, transparent 60%);
+        }
+        .test-banner-gfx {
+            position: absolute; right: 56px; top: 50%;
+            transform: translateY(-50%);
+            font-size: 7rem; opacity: 0.07;
+            pointer-events: none;
+        }
+        .test-banner-content { position: relative; z-index: 1; max-width: 520px; }
+        .test-banner-content .eyebrow {
+            font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em;
+            text-transform: uppercase; color: var(--teal); margin-bottom: 12px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .test-banner-content h2 {
+            font-family: 'Syne', sans-serif;
+            font-size: 2rem; font-weight: 800; letter-spacing: -1px;
+            line-height: 1.15; margin-bottom: 14px;
+        }
+        .test-banner-content p { font-size: 0.9rem; line-height: 1.7; color: var(--muted); margin-bottom: 28px; }
+        .test-banner-actions { display: flex; align-items: center; gap: 12px; position: relative; z-index: 1; }
+
+        .btn-teal {
+            background: linear-gradient(135deg, rgba(0,232,200,0.15), rgba(0,232,200,0.08));
+            border: 1px solid rgba(0,232,200,0.3);
+            color: var(--teal); font-weight: 600; font-size: 0.9rem;
+            padding: 12px 26px; border-radius: 11px; text-decoration: none;
+            transition: all 0.2s;
+        }
+        .btn-teal:hover { background: rgba(0,232,200,0.2); border-color: rgba(0,232,200,0.5); transform: translateY(-1px); }
+
+        /* ═══════════════════ FOOTER ═══════════════════ */
+        footer {
+            position: relative; z-index: 1;
+            border-top: 1px solid var(--border);
+            padding: 40px 48px;
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 16px;
+        }
+        .footer-logo {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800; font-size: 1rem; color: var(--text);
+            text-decoration: none;
+        }
+        .footer-logo .dot { color: var(--red); }
+        .footer-links { display: flex; gap: 24px; }
+        .footer-links a { font-size: 0.82rem; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+        .footer-links a:hover { color: var(--text); }
+        .footer-copy { font-size: 0.78rem; color: var(--muted); }
+
+        /* ═══════════════════ RESPONSIVE ═══════════════════ */
+        @media (max-width: 768px) {
+            nav { padding: 0 20px; }
+            .nav-links { display: none; }
+            .hero { padding: 140px 20px 80px; }
+            .hero-stats { flex-wrap: wrap; gap: 20px; justify-content: center; }
+            .stat-sep { display: none; }
+            .feat-grid { grid-template-columns: 1fr; }
+            .test-banner-inner { padding: 36px 28px; flex-direction: column; }
+            footer { padding: 32px 20px; flex-direction: column; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Ambient light -->
+<div class="ambient">
+    <div class="ambient-blob ab1"></div>
+    <div class="ambient-blob ab2"></div>
+    <div class="ambient-blob ab3"></div>
+</div>
+
+<!-- Navbar -->
+<nav>
+    <a class="nav-logo" href="index.html"><span class="dot">Sarilium</span></a>
+    <ul class="nav-links">
+        <li><a href="index.html" class="active">Anasayfa</a></li>
+        <li><a href="#">Bloglar</a></li>
+        <li><a href="#">Kod Paylaşımı</a></li>
+        <li><a href="#">Topluluk</a></li>
+        <li><a href="./hakkimizda.html">Hakkımızda</a></li>
+        <li><a href="main.html" class="nav-test-link"><span class="pulse-dot"></span>Testler</a></li>
+    </ul>
+    <div class="nav-actions">
+        <a href="#" class="btn-login">Giriş Yap</a>
+        <a href="#" class="btn-register">Kayıt Ol</a>
+    </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+    <div class="hero-badge">
+        <span class="hero-badge-dot"></span>
+        Türkçe Geliştirici Platformu
+    </div>
+    <h1>
+        Kod yaz. Öğren.<br>
+        <span class="line2"><em>Paylaş.</em> <span class="teal">Büyü.</span></span>
+    </h1>
+    <p class="hero-sub">
+        Sarilium; <strong>kod inceleme blogları</strong>, güncel <strong>teknoloji haberleri</strong>,
+        <strong>kod paylaşımları</strong> ve <strong>topluluk duyuruları</strong> için
+        Türkçe konuşan geliştiricilerin buluşma noktası.
+    </p>
+    <div class="hero-cta">
+        <a href="#" class="cta-primary">Topluluğa Katıl →</a>
+        <a href="main.html" class="cta-ghost">Testleri dene <span class="arrow">→</span></a>
+    </div>
+    <div class="hero-stats">
+        <div class="stat">
+            <div class="stat-val">12<span class="accent">K+</span></div>
+            <div class="stat-lbl">Geliştirici</div>
+        </div>
+        <div class="stat-sep"></div>
+        <div class="stat">
+            <div class="stat-val">3<span class="accent">K+</span></div>
+            <div class="stat-lbl">Kod Snippet</div>
+        </div>
+        <div class="stat-sep"></div>
+        <div class="stat">
+            <div class="stat-val">840<span class="accent">+</span></div>
+            <div class="stat-lbl">Makale</div>
+        </div>
+        <div class="stat-sep"></div>
+        <div class="stat">
+            <div class="stat-val">50<span class="accent">+</span></div>
+            <div class="stat-lbl">Haftalık Etkinlik</div>
+        </div>
+    </div>
+</section>
+
+<!-- Marquee -->
+<div class="marquee-wrap">
+    <div class="marquee-track">
+        <div class="marquee-item"><span class="tag r">React 19</span></div>
+        <div class="marquee-item"><span class="tag t">Rust 2024</span></div>
+        <div class="marquee-item"><span class="tag">TypeScript 5.4</span></div>
+        <div class="marquee-item"><span class="tag g">Next.js 15</span></div>
+        <div class="marquee-item"><span class="tag b">Bun 1.1</span></div>
+        <div class="marquee-item"><span class="tag r">Tailwind v4</span></div>
+        <div class="marquee-item"><span class="tag">Astro 4.0</span></div>
+        <div class="marquee-item"><span class="tag t">Deno 2.0</span></div>
+        <div class="marquee-item"><span class="tag g">Vite 6</span></div>
+        <div class="marquee-item"><span class="tag">shadcn/ui</span></div>
+        <div class="marquee-item"><span class="tag b">Hono.js</span></div>
+        <div class="marquee-item"><span class="tag r">Drizzle ORM</span></div>
+        <!-- duplicate for infinite effect -->
+        <div class="marquee-item"><span class="tag r">React 19</span></div>
+        <div class="marquee-item"><span class="tag t">Rust 2024</span></div>
+        <div class="marquee-item"><span class="tag">TypeScript 5.4</span></div>
+        <div class="marquee-item"><span class="tag g">Next.js 15</span></div>
+        <div class="marquee-item"><span class="tag b">Bun 1.1</span></div>
+        <div class="marquee-item"><span class="tag r">Tailwind v4</span></div>
+        <div class="marquee-item"><span class="tag">Astro 4.0</span></div>
+        <div class="marquee-item"><span class="tag t">Deno 2.0</span></div>
+        <div class="marquee-item"><span class="tag g">Vite 6</span></div>
+        <div class="marquee-item"><span class="tag">shadcn/ui</span></div>
+        <div class="marquee-item"><span class="tag b">Hono.js</span></div>
+        <div class="marquee-item"><span class="tag r">Drizzle ORM</span></div>
+    </div>
+</div>
+
+<!-- Features -->
+<section class="section">
+    <div class="section-header">
+        <div class="section-tag">Neler var?</div>
+        <h2 class="section-title">Her şey tek <em>platformda</em></h2>
+    </div>
+    <div class="feat-grid">
+        <div class="feat-card accent-blue">
+            <div class="feat-icon-wrap">🔍</div>
+            <div class="feat-label">Kod İnceleme</div>
+            <h3>Gerçek Kod, Gerçek Geri Bildirim</h3>
+            <p>Açık kaynak projeler ve pull request'ler üzerinden derinlemesine teknik analizler. Uzmanlardan öğren, kendi projeni paylaş.</p>
+            <span class="feat-arrow">↗</span>
+        </div>
+        <div class="feat-card accent-gold">
+            <div class="feat-icon-wrap">📡</div>
+            <div class="feat-label">Teknoloji</div>
+            <h3>Gelişmeleri Takip Et</h3>
+            <p>Dil güncellemeleri, framework haberleri ve ekosistem değişiklikleri. Güncel kal, geride kalma.</p>
+            <span class="feat-arrow">↗</span>
+        </div>
+        <div class="feat-card accent-teal">
+            <div class="feat-icon-wrap">💻</div>
+            <div class="feat-label">Kod Paylaşımı</div>
+            <h3>Snippet'leri Keşfet</h3>
+            <p>Topluluğun paylaştığı kullanışlı kod parçaları ve kütüphaneler. Arama yap, keşfet, kaydet.</p>
+            <span class="feat-arrow">↗</span>
+        </div>
+        <div class="feat-card accent-red">
+            <div class="feat-icon-wrap">📢</div>
+            <div class="feat-label">Topluluk</div>
+            <h3>Etkinlik ve Duyurular</h3>
+            <p>Hackathonlar, canlı etkinlikler ve topluluk haberleri tek yerde. Ağını genişlet, bağlantı kur.</p>
+            <span class="feat-arrow">↗</span>
+        </div>
+    </div>
+</section>
+
+<!-- Test CTA Banner -->
+<div class="test-banner">
+    <div class="test-banner-inner">
+        <div class="test-banner-content">
+            <div class="eyebrow">
+                <span class="pulse-dot" style="background:var(--teal);box-shadow:0 0 8px var(--teal)"></span>
+                Yeni Test Serisi
+            </div>
+            <h2>Yapay Zekayı Gerçekten Tanıyor musun?</h2>
+            <p>AI görselleri artık inanılmaz derecede gerçekçi. "AI vs Gerçek" testinde görsel okuryazarlığını ölç ve ne kadar iyi olduğunu öğren.</p>
+        </div>
+        <div class="test-banner-actions">
+            <a href="main.html" class="btn-teal">Testi Başlat →</a>
+            <a href="#" class="cta-ghost" style="font-size:0.88rem">Nasıl çalışır?</a>
+        </div>
+        <div class="test-banner-gfx">🤖</div>
+    </div>
+</div>
+
+<!-- Footer -->
+<footer>
+    <a class="footer-logo" href="index.html"><span class="dot">Sarilium</span></a>
+    <div class="footer-links">
+        <a href="#">Hakkımızda</a>
+        <a href="#">Blog</a>
+        <a href="#">Topluluk</a>
+        <a href="./iletisim.html">İletişim</a>
+        <a href="./gizlilik.html">Gizlilik</a>
+    </div>
+    <div class="footer-copy">© 2026 Sarilium. Tüm hakları saklıdır.</div>
+</footer>
+
+</body>
+</html>

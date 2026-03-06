@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hakkımızda — Sarilium</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg:      #080910;
+            --bg2:     #0d0f1c;
+            --card:    #111428;
+            --border:  rgba(255,255,255,0.06);
+            --border2: rgba(255,255,255,0.1);
+            --text:    #eef0ff;
+            --muted:   #6b75a0;
+            --red:     #f03a5f;
+            --teal:    #00e8c8;
+            --gold:    #f0b429;
+            --blue:    #5b8af5;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body::after {
+            content: '';
+            position: fixed; inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+            pointer-events: none; z-index: 9999; opacity: 0.35;
+        }
+
+        /* AMBIENT */
+        .ambient { position: fixed; top: 0; left: 0; right: 0; height: 100vh; pointer-events: none; z-index: 0; overflow: hidden; }
+        .ambient-blob { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.11; }
+        .ab1 { width: 600px; height: 600px; background: var(--red);  top: -200px; left: -100px; animation: drift1 18s ease-in-out infinite; }
+        .ab2 { width: 500px; height: 500px; background: var(--teal); top: -100px; right: -150px; animation: drift2 22s ease-in-out infinite; }
+        .ab3 { width: 400px; height: 400px; background: var(--blue); top: 40%; left: 30%; animation: drift3 15s ease-in-out infinite; }
+        @keyframes drift1 { 0%,100%{transform:translate(0,0) scale(1)}   50%{transform:translate(60px,80px) scale(1.1)} }
+        @keyframes drift2 { 0%,100%{transform:translate(0,0) scale(1)}   50%{transform:translate(-40px,60px) scale(0.9)} }
+        @keyframes drift3 { 0%,100%{transform:translate(0,0)}            50%{transform:translate(-80px,-40px)} }
+
+        /* NAVBAR */
+        nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 48px; height: 68px;
+            background: rgba(8,9,16,0.75);
+            backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid var(--border);
+        }
+        .nav-logo {
+            font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.15rem;
+            text-decoration: none; color: var(--text); letter-spacing: -0.5px;
+            display: flex; align-items: center; gap: 2px;
+        }
+        .nav-logo .dot { color: var(--red); font-size: 1.4rem; line-height: 0; position: relative; top: 2px; }
+        .nav-links { display: flex; gap: 2px; list-style: none; align-items: center; }
+        .nav-links a {
+            color: var(--muted); text-decoration: none; font-size: 0.875rem;
+            font-weight: 500; padding: 7px 14px; border-radius: 9px;
+            transition: color 0.2s, background 0.2s;
+        }
+        .nav-links a:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+        .nav-links .active { color: var(--text); background: rgba(255,255,255,0.06); border: 1px solid var(--border2); }
+        .nav-test-link {
+            display: flex; align-items: center; gap: 7px;
+            background: linear-gradient(135deg, rgba(0,232,200,0.1), rgba(0,232,200,0.05)) !important;
+            border: 1px solid rgba(0,232,200,0.2) !important;
+            color: var(--teal) !important;
+        }
+        .nav-test-link:hover { background: rgba(0,232,200,0.15) !important; }
+        .pulse-dot {
+            width: 6px; height: 6px; background: var(--teal);
+            border-radius: 50%; box-shadow: 0 0 8px var(--teal);
+            animation: pulse-anim 2s ease-in-out infinite;
+        }
+        @keyframes pulse-anim { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.7)} }
+        .nav-actions { display: flex; align-items: center; gap: 8px; }
+        .btn-login {
+            color: var(--muted); text-decoration: none; font-size: 0.85rem;
+            font-weight: 500; padding: 8px 16px; border-radius: 9px;
+            border: 1px solid var(--border); transition: all 0.2s;
+        }
+        .btn-login:hover { color: var(--text); border-color: var(--border2); }
+        .btn-register {
+            background: var(--red); color: #fff; text-decoration: none;
+            font-size: 0.85rem; font-weight: 600; padding: 8px 18px;
+            border-radius: 9px; transition: all 0.2s;
+            box-shadow: 0 0 20px rgba(240,58,95,0.25);
+        }
+        .btn-register:hover { opacity: 0.88; transform: translateY(-1px); box-shadow: 0 0 30px rgba(240,58,95,0.35); }
+
+        /* ANIMATIONS */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* HERO */
+        .hero {
+            position: relative; z-index: 1;
+            max-width: 800px; margin: 0 auto;
+            padding: 160px 32px 80px;
+            animation: fadeUp 0.6s ease both;
+        }
+
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 9px;
+            background: rgba(240,58,95,0.08); border: 1px solid rgba(240,58,95,0.2);
+            color: #ff6b8a; font-size: 0.72rem; font-weight: 600;
+            letter-spacing: 0.1em; text-transform: uppercase;
+            padding: 7px 16px; border-radius: 100px;
+            margin-bottom: 24px; display: inline-flex;
+        }
+        .badge-dot { width: 5px; height: 5px; background: var(--red); border-radius: 50%; box-shadow: 0 0 8px var(--red); }
+
+        .hero h1 {
+            font-family: 'Syne', sans-serif;
+            font-size: clamp(2.4rem, 6vw, 4rem);
+            font-weight: 800; letter-spacing: -2px; line-height: 1.05;
+            margin-bottom: 20px;
+        }
+        .hero h1 em { font-style: normal; color: var(--red); }
+
+        .hero p {
+            font-size: 1.05rem; color: var(--muted); line-height: 1.85;
+            max-width: 580px;
+        }
+        .hero p strong { color: var(--text); font-weight: 500; }
+
+        /* STATS ROW */
+        .stats-row {
+            position: relative; z-index: 1;
+            max-width: 800px; margin: 0 auto;
+            padding: 0 32px 72px;
+            display: grid; grid-template-columns: repeat(4, 1fr);
+            gap: 1px;
+            background: var(--border);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            animation: fadeUp 0.6s 0.1s ease both;
+        }
+        .stat-item {
+            background: var(--card);
+            padding: 28px 24px;
+            display: flex; flex-direction: column; gap: 4px;
+        }
+        .stat-item .val {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.9rem; font-weight: 800; letter-spacing: -1px;
+        }
+        .stat-item .val .acc-r { color: var(--red); }
+        .stat-item .val .acc-t { color: var(--teal); }
+        .stat-item .val .acc-g { color: var(--gold); }
+        .stat-item .val .acc-b { color: var(--blue); }
+        .stat-item .lbl { font-size: 0.8rem; color: var(--muted); }
+
+        /* SECTIONS */
+        .section-wrap {
+            position: relative; z-index: 1;
+            max-width: 800px; margin: 0 auto;
+            padding: 0 32px;
+        }
+
+        .section {
+            padding: 56px 0;
+            border-top: 1px solid var(--border);
+            animation: fadeUp 0.6s 0.15s ease both;
+        }
+
+        .section-tag {
+            font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em;
+            text-transform: uppercase; color: var(--muted);
+            margin-bottom: 16px;
+        }
+
+        .section h2 {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.6rem; font-weight: 800; letter-spacing: -0.8px;
+            margin-bottom: 18px;
+        }
+        .section h2 em { font-style: normal; color: var(--teal); }
+        .section h2 .red { color: var(--red); }
+
+        .section p {
+            font-size: 0.95rem; color: var(--muted); line-height: 1.85;
+            max-width: 580px;
+        }
+        .section p + p { margin-top: 12px; }
+        .section strong { color: var(--text); font-weight: 500; }
+
+        /* VALUES GRID */
+        .values-grid {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 12px; margin-top: 24px;
+        }
+        .value-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px; padding: 22px 24px;
+            transition: border-color 0.2s, transform 0.2s;
+        }
+        .value-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+        .value-icon { font-size: 1.4rem; margin-bottom: 10px; }
+        .value-title { font-family: 'Syne', sans-serif; font-size: 0.9rem; font-weight: 700; margin-bottom: 6px; }
+        .value-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.65; }
+
+        /* TEAM GRID */
+        .team-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 12px; margin-top: 24px;
+        }
+        .team-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px; padding: 24px;
+            display: flex; flex-direction: column; align-items: flex-start; gap: 10px;
+            transition: border-color 0.2s;
+        }
+        .team-card:hover { border-color: var(--border2); }
+        .avatar {
+            width: 48px; height: 48px; border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem; flex-shrink: 0;
+        }
+        .av-red  { background: rgba(240,58,95,0.1);  border: 1px solid rgba(240,58,95,0.15); }
+        .av-teal { background: rgba(0,232,200,0.1);  border: 1px solid rgba(0,232,200,0.15); }
+        .av-blue { background: rgba(91,138,245,0.1); border: 1px solid rgba(91,138,245,0.15); }
+        .av-gold { background: rgba(240,180,41,0.1); border: 1px solid rgba(240,180,41,0.15); }
+        .member-name { font-family: 'Syne', sans-serif; font-size: 0.92rem; font-weight: 700; }
+        .member-role { font-size: 0.78rem; color: var(--muted); }
+
+        /* CTA CARDS */
+        .cta-grid {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 12px; margin-top: 8px;
+        }
+        .cta-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px; padding: 28px 28px 24px;
+            display: flex; flex-direction: column; gap: 10px;
+            text-decoration: none;
+            transition: border-color 0.25s, transform 0.25s;
+        }
+        .cta-card:hover { transform: translateY(-3px); }
+        .cta-card.red  { border-color: rgba(240,58,95,0.15); }
+        .cta-card.red:hover  { border-color: rgba(240,58,95,0.35); }
+        .cta-card.blue { border-color: rgba(91,138,245,0.15); }
+        .cta-card.blue:hover { border-color: rgba(91,138,245,0.35); }
+
+        .cta-card-icon {
+            width: 42px; height: 42px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
+        }
+        .icon-red  { background: rgba(240,58,95,0.1);  border: 1px solid rgba(240,58,95,0.15); }
+        .icon-blue { background: rgba(91,138,245,0.1); border: 1px solid rgba(91,138,245,0.15); }
+
+        .cta-card-title {
+            font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700;
+            color: var(--text);
+        }
+        .cta-card-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+        .cta-card-link {
+            font-size: 0.82rem; font-weight: 600; margin-top: 4px;
+            display: flex; align-items: center; gap: 5px;
+            transition: gap 0.2s;
+        }
+        .cta-card.red  .cta-card-link { color: #ff6b8a; }
+        .cta-card.blue .cta-card-link { color: #7ba3ff; }
+        .cta-card:hover .cta-card-link { gap: 9px; }
+
+        /* FOOTER */
+        footer {
+            position: relative; z-index: 1;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 28px 48px; margin-top: 80px;
+            border-top: 1px solid var(--border);
+            flex-wrap: wrap; gap: 16px;
+        }
+        .footer-logo {
+            font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1rem;
+            text-decoration: none; color: var(--text); letter-spacing: -0.5px;
+        }
+        .footer-logo .dot { color: var(--red); font-size: 1.2rem; line-height: 0; position: relative; top: 2px; }
+        .footer-links { display: flex; gap: 24px; flex-wrap: wrap; }
+        .footer-links a { color: var(--muted); text-decoration: none; font-size: 0.82rem; transition: color 0.2s; }
+        .footer-links a:hover { color: var(--text); }
+        .footer-copy { font-size: 0.78rem; color: var(--muted); }
+
+        @media (max-width: 768px) {
+            nav { padding: 0 20px; }
+            .nav-links { display: none; }
+            .hero { padding: 120px 20px 60px; }
+            .stats-row { grid-template-columns: 1fr 1fr; padding: 0 20px 60px; }
+            .section-wrap { padding: 0 20px; }
+            .values-grid, .cta-grid { grid-template-columns: 1fr; }
+            .team-grid { grid-template-columns: 1fr 1fr; }
+            footer { padding: 28px 20px; flex-direction: column; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="ambient">
+    <div class="ambient-blob ab1"></div>
+    <div class="ambient-blob ab2"></div>
+    <div class="ambient-blob ab3"></div>
+</div>
+
+<nav>
+    <a class="nav-logo" href="index.html"><span class="dot">Sarilium</span></a>
+    <ul class="nav-links">
+        <li><a href="index.html">Anasayfa</a></li>
+        <li><a href="#">Kod İnceleme</a></li>
+        <li><a href="#">Teknoloji</a></li>
+        <li><a href="#">Topluluk</a></li>
+        <li><a href="hakkimizda.html" class="active">Hakkımızda</a></li>
+        <li><a href="main.html" class="nav-test-link"><span class="pulse-dot"></span>Testler</a></li>
+    </ul>
+    <div class="nav-actions">
+        <a href="#" class="btn-login">Giriş Yap</a>
+        <a href="#" class="btn-register">Kayıt Ol</a>
+    </div>
+</nav>
+
+<!-- Hero -->
+<header class="hero">
+    <div class="hero-badge"><span class="badge-dot"></span> Biz Kimiz</div>
+    <h1>Geliştiriciler için,<br>geliştiriciler <em>tarafından.</em></h1>
+    <p>Sarilium, Türkçe konuşan yazılım geliştiricilerin bir araya geldiği, <strong>kod paylaştığı</strong>, <strong>birbirinden öğrendiği</strong> ve <strong>birlikte büyüdüğü</strong> bir topluluk platformudur. Buraya bir iki satır platform hikayesi yazabilirsiniz.</p>
+</header>
+
+<!-- Stats -->
+<div class="stats-row">
+    <div class="stat-item">
+        <div class="val">12<span class="acc-r">K+</span></div>
+        <div class="lbl">Geliştirici</div>
+    </div>
+    <div class="stat-item">
+        <div class="val">3<span class="acc-t">K+</span></div>
+        <div class="lbl">Kod Snippet</div>
+    </div>
+    <div class="stat-item">
+        <div class="val">840<span class="acc-g">+</span></div>
+        <div class="lbl">Makale</div>
+    </div>
+    <div class="stat-item">
+        <div class="val">50<span class="acc-b">+</span></div>
+        <div class="lbl">Haftalık Etkinlik</div>
+    </div>
+</div>
+
+<!-- Content -->
+<div class="section-wrap">
+
+    <!-- Mission -->
+    <div class="section">
+        <div class="section-tag">Misyonumuz</div>
+        <h2>Neden <em>var</em>ız?</h2>
+        <p>Türkçe geliştirici içeriğinin dağınık ve yetersiz olduğunu fark ettik. Forumlar, blog yazıları, soru-cevap platformları birbirinden kopuk ve güncel değildi.</p>
+        <p>Sarilium'u bu boşluğu doldurmak için kurduk. <strong>Kaliteli Türkçe teknik içerik</strong> üretmek, topluluk bilgisini tek çatı altında toplamak ve geliştiricilerin birbirine destek olmasını kolaylaştırmak temel amacımız.</p>
+    </div>
+
+    <!-- Values -->
+    <div class="section">
+        <div class="section-tag">Değerlerimiz</div>
+        <h2>Ne<span class="red">ye</span> inanıyoruz?</h2>
+        <div class="values-grid">
+            <div class="value-card">
+                <div class="value-icon">🔓</div>
+                <div class="value-title">Açıklık</div>
+                <div class="value-desc">Bilgi paylaşıldıkça büyür. İçeriklerimiz herkese açık ve ücretsizdir.</div>
+            </div>
+            <div class="value-card">
+                <div class="value-icon">⚡</div>
+                <div class="value-title">Kalite</div>
+                <div class="value-desc">Miktar değil kalite. Az ama öz, doğrulanmış ve güncel içerik sunuyoruz.</div>
+            </div>
+            <div class="value-card">
+                <div class="value-icon">🤝</div>
+                <div class="value-title">Topluluk</div>
+                <div class="value-desc">Rekabet değil dayanışma. Birlikte öğrenir, birlikte büyürüz.</div>
+            </div>
+            <div class="value-card">
+                <div class="value-icon">🔒</div>
+                <div class="value-title">Gizlilik</div>
+                <div class="value-desc">Verileriniz sizin. Reklam yok, takip yok, veri satışı yok.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="section">
+        <div class="section-tag">Daha fazla</div>
+        <h2>Merak ettikleriniz için</h2>
+        <div class="cta-grid">
+            <a href="iletisim.html" class="cta-card red">
+                <div class="cta-card-icon icon-red">✉️</div>
+                <div class="cta-card-title">İletişime Geçin</div>
+                <div class="cta-card-desc">Sorularınız, önerileriniz veya iş birliği teklifleri için ekibimize ulaşın.</div>
+                <div class="cta-card-link">Formu aç →</div>
+            </a>
+            <a href="gizlilik.html" class="cta-card blue">
+                <div class="cta-card-icon icon-blue">🔒</div>
+                <div class="cta-card-title">Gizlilik Politikası</div>
+                <div class="cta-card-desc">Verilerinizi nasıl işlediğimizi, ne sakladığımızı ve haklarınızı öğrenin.</div>
+                <div class="cta-card-link">Politikayı oku →</div>
+            </a>
+        </div>
+    </div>
+
+</div>
+
+<footer>
+    <a class="footer-logo" href="index.html"><span class="dot">Sarilium</span></a>
+    <div class="footer-links">
+        <a href="hakkimizda.html">Hakkımızda</a>
+        <a href="#">Blog</a>
+        <a href="#">Topluluk</a>
+        <a href="iletisim.html">İletişim</a>
+        <a href="gizlilik.html">Gizlilik</a>
+    </div>
+    <div class="footer-copy">© 2026 Sarilium. Tüm hakları saklıdır.</div>
+</footer>
+
+</body>
+</html>
